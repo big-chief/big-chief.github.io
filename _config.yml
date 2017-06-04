@@ -1,13 +1,13 @@
 name: 酋长之家
-author: a酋长之家
+author: 酋长之家
 #baseurl: ./
 description: 技术成长之路
 github: http://www.github.com/big-chief
-twitter: http://www.twitter.com/
-facebook: http://www.facebook.com
-linkedin: http://www.linkedin.com
+#twitter: http://www.twitter.com/
+#facebook: http://www.facebook.com
+#linkedin: http://www.linkedin.com
 email: good_decision@sina.com
-location: 42°2'16"N   70°12'47"W
+#location: 42°2'16"N   70°12'47"W
 disqus: diqus-username
 
 ##Make sure to edit the above fields, especially for disqus.
