@@ -5,8 +5,8 @@ title: 酋长之家
 {% include greeting.html %}
 
 {% if site.posts != empty %}
-<div class="recent-posts">
-  <h1>Recent Posts</h1>
+<div class="recent-posts" align='center'>
+  <h1>相关文章</h1>
   {% for post in site.posts limit: 3 %}
     {% if forloop.first %}
       {% assign add_class = 'most-recent' %}
@@ -33,7 +33,7 @@ title: 酋长之家
     {% assign fresh_tag = '' %}
   {% endfor %}
   <ul>
-    <a href="{{ site.baseurl }}/list.html">View More...</a>
+    <a href="{{ site.baseurl }}/list.html">查看更多...</a>
   </ul>
 </div>
 {% endif %}
