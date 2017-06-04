@@ -6,7 +6,5 @@ categories: jekyll testing
 
 
 
-###个人简介
-* https://github.com/big-chief/big-chief.github.io.git
-###脚本记录
--------------
+#个人简介
+##脚本记录
