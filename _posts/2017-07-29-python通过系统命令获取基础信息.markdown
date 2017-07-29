@@ -1,0 +1,162 @@
+---
+title: python通过系统命令，获取系统基础信息
+---
+
+###实现方法为
+自定义KEY 
+zabbix 自带KEY
+
+``` 
+#!/usr/bin/env python
+# -*- coding:utf8 -*-
+
+import re
+import time
+import commands
+
+class gained_data:
+    # 基础信息
+    def __init__(self):
+        self.timestamp = int(time.time())
+
+    # 获取 cpu 信息
+    def get_cpu(self):
+        load = {}
+        data = {
+            "load_1" : " system.cpu.load[percpu,avg1]",
+            "load_5" : " system.cpu.load[percpu,avg5]",
+            "load_15" : " system.cpu.load[percpu,avg15]",
+        }
+        for i in data:
+            request = commands.getoutput(self.agent+data[i])
+            str = re.compile(r"\|(.*?)\]")
+            format_str = str.search(request)
+            if format_str.group(1) == "ZBX_NOTSUPPORTED":
+                load[i] = "None"
+            else:
+                load[i] = float(format_str.group(1))
+        return load
+
+    # 获取 cpu_util 信息
+    def get_cpu_util(self):
+        util = {}
+        data = {
+            "user": " system.cpu.user",
+            "sys": " system.cpu.sys",
+            "wait": " system.cpu.iowait",
+            "idle": " system.cpu.idle"
+        }
+        for i in data:
+            request = commands.getoutput(self.agent+data[i])
+            str = re.compile(r"\|(.*?)\]")
+            format_str = str.search(request)
+            if format_str.group(1) == "ZBX_NOTSUPPORTED":
+                util[i] = "None"
+            else:
+                util[i] = format_str.group(1)
+        return util
+
+    # 获取 mem 信息
+    def get_mem(self):
+        mem = {}
+        data = {
+            "total" : " vm.memory.size[total]",
+            "available" : " vm.memory.size[available]"
+        }
+        for i in data:
+            request = commands.getoutput(self.agent+data[i])
+            str = re.compile(r"\|(.*?)\]")
+            format_str = str.search(request)
+            # 单位转换
+            n = float(format_str.group(1))/1024/1024/1024
+            mem[i] = '%.2f' % n
+        return mem
+
+    # 获取 disk 信息
+    def get_disk(self):
+        data = {}
+        disk = {}
+        com = commands.getoutput('mount | grep \"^/dev\" | awk \'{print $3}\'')
+        com = com.split('\n')
+        for i in com:
+            data[i] = {"total":"vfs.fs.size["+i+",total]","available":"vfs.fs.size["+i+",free]"}
+        for n,x in data.items():
+            disk[n] = {}
+            for k, v in x.items():
+                rs = commands.getoutput(self.agent+v)
+                if not disk[n].has_key(k):
+                    disk[n][k] = {}
+                str = re.compile(r"\|(.*?)\]")
+                format_str = str.search(rs)
+                # 单位转换
+                num = float(format_str.group(1))/1024/1024/1024
+                disk[n][k] = '%.2f' % num
+        return disk
+
+    # 获取 disk_io 信息
+    def get_disk_io(self):
+        data = {}
+        disk = {}
+        com = commands.getoutput('mount | grep \"^/dev\" | awk \'{print $1}\'')
+        com = com.split('\n')
+        for i in com:
+            data[i] = {"io_write":"disk_io[w,"+i+"]","io_read":"disk_io[r,"+i+"]"}
+        for n,x in data.items():
+            disk[n] = {}
+            for k, v in x.items():
+                rs = commands.getoutput(self.agent+v)
+                if not disk[n].has_key(k):
+                    disk[n][k] = {}
+                str = re.compile(r"\|(.*?)\]")
+                format_str = str.search(rs)
+                disk[n][k] = '%.2f' % float(format_str.group(1))
+        return disk
+
+    # 获取 net 信息
+    def get_net(self):
+        data = {}
+        net = {}
+        eth = commands.getoutput("ifconfig | grep \"eth\" | awk {\'print $1\'}")
+        eth = eth.split('\n')
+        for i in eth:
+            data[i] = {"in":"net.if.in["+i+"]","out":"net.if.out["+i+"]"}
+        for n,x in data.items():
+            net[n] = {}
+            for k, v in x.items():
+                if not net[n].has_key(k):
+                    net[n][k] = {}
+                str = re.compile(r"\|(.*?)\]")
+                rs = commands.getoutput(self.agent+v)
+                format_str = str.search(rs)
+                ago_rs = format_str.group(1)
+                time.sleep(1)
+                now_rs = commands.getoutput(self.agent+v)
+                now_format_str = str.search(now_rs)
+                now_rs = int(now_format_str.group(1)) - int(ago_rs)
+                # 单位转换
+                num = float(now_rs)/8/1024/1024
+                net[n][k] = '%.2f' % num
+        return net
+
+    # 拼接
+    def get_fin(self):
+        c = gained_data()
+        data ={
+         "game_name": self.op_main_category,
+         "platform_name": self.op_platform,
+         "wxsn":str(self.op_wxsn),
+         "inner_ip": str(self.op_innerip),
+         "timestamp": int(self.timestamp),
+         "hostname": str(self.op_hostname),
+         "cpu":
+             {
+                 "load": c.get_cpu(),
+                 "util":c.get_cpu_util(),
+             },
+         "mem":c.get_mem(),
+         "disk": c.get_disk(),
+         "io": c.get_disk_io(),
+         "net": c.get_net(),
+         }
+        return data
+```
