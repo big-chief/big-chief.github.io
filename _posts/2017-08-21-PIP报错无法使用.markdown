@@ -1,0 +1,35 @@
+---
+title: pip search 出现403 访问错误解决方法
+---
+
+
+
+1. wget --no-check-certificate http://pypi.python.org/packages/source/p/pip/pip-1.0.tar.gz
+2. 下载后解压 
+3. 进入 解压目录后,通过已安装好的python 执行以下命令
+4. python setup.py install 
+5. 安装成功
+ * 执行pip search pathlib 报以下错误
+ * Traceback (most recent call last):
+File "/usr/bin/pypi-install", line 142, in <module>
+main()
+File "/usr/bin/pypi-install", line 110, in main tarball_fname = get_source_tarball(package_name,verbose=options.verbose)
+File "/usr/bin/pypi-install", line 61, in get_source_tarballverbose=verbose)
+File "/usr/bin/pypi-install", line 30, in find_tar_gz releases = pypi.package_releases(package_name)
+File "/usr/lib/python2.7/xmlrpclib.py", line 1233, in __call__return self.__send(self.__name, args)
+File "/usr/lib/python2.7/xmlrpclib.py", line 1587, in __requestverbose=self.__verbose
+File "/usr/lib/python2.7/xmlrpclib.py", line 1273, in request
+ return self.single_request(host, handler, request_body, verbose)
+File "/usr/lib/python2.7/xmlrpclib.py", line 1321, in single_requestresponse.msg,xmlrpclib.ProtocolError: <ProtocolError for pypi.python.org/pypi: 403 Must access using HTTPS instead of HTTP>
+
+
+* 升级PIP 软件
+* wget https://bootstrap.pypa.io/get-pip.py
+* python2.7 get-pip.py --no-wheel
+* pip install -U pip
+* 测试 pip 是否可用
+* pip search pathlib
+
+安装成功
+===
+
